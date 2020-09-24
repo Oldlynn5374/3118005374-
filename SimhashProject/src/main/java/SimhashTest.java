@@ -45,15 +45,16 @@ public class SimhashTest {
     }
 
     //内容预处理，过滤无关内容
-    private String cleanWords(String content) {
+    public String cleanWords(String content) {
         //过滤HTML标签
         content = Jsoup.clean(content, Whitelist.none());
-
         content = StringUtils.lowerCase(content);
         //过滤符
         String[] tokens = {" ", "\n", "\\r", "\\n", "\\t", "&nbsp;", "\r", "\t"};
+        content = content.replaceAll("[^(\\u4e00-\\u9fa5)]", "");
         for (String token : tokens) {
             content = content.replace(token, "");
+
         }
         return content;
     }
