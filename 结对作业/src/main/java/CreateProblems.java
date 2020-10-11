@@ -1,3 +1,4 @@
+import com.sun.org.apache.xpath.internal.operations.Div;
 import number.Number;
 import symbol.*;
 
@@ -11,6 +12,17 @@ public class CreateProblems {
     //括号链表，value为出现的位置。其中前半部分是“（”，后半部分是“）”。
     public List<Integer> bracList;
 
+    //把上面的2个List复制一份，用作保存问题的原始数据
+    public List<Number> numList2;
+    public List<Symbol> opList2;
+
+
+    //存储生成问题的运算最后一步字符串
+    String resultStorage = null;
+    //存储每条问题
+    Map<String,Boolean> storage = new HashMap<String, Boolean>();
+
+
     /**
      * @return 随机数
      * @params 随机数范围
@@ -20,6 +32,155 @@ public class CreateProblems {
         Integer num = random.nextInt(range);
         return num;
     }
+
+    /**
+     * 生成问题集
+     * @return
+     * @params n为题目数，r为题目数值范围
+     */
+    public void createProblems(int n , int r) throws Exception {
+        //存储生成问题的数字集
+        List<Float> numStorage;
+        //存储生成问题的符号集序号
+        List<Float> opStorage;
+        //存储生成问题的符号
+        List<Symbol> symlStorage;
+        //问题信息
+        StringBuilder sb;
+        //运算结果集
+        List<String> resultList = new ArrayList<String>();
+
+        for(int i = 0;i < n; ){
+            //生成问题并判断合法性
+            String problem = createProblem(r);
+            String result = solveProblem();
+            //判断生成的问题是否合法，不合法就直接跳到下一循环。
+            if(null == problem){
+                continue;
+            }
+            if(null == result){
+                continue;
+            }
+            //单个问题生成后：
+
+
+            sb = new StringBuilder();
+            //存储生成问题的数字集
+            numStorage = new ArrayList<Float>();
+            //存储生成问题的符号集序号
+            opStorage = new ArrayList<Float>();
+            //存储生成问题的符号
+            symlStorage = new ArrayList<Symbol>();
+
+            //获取Number的值
+            for(Number number : numList2){
+                numStorage.add(number.getValue());
+            }
+            //获取符号的序号，以便为符号集排序
+            for(Symbol symbol : opList2){
+                opStorage.add(symbol.getNo());
+            }
+            quickSort(numStorage,0,numStorage.size() - 1);
+            quickSort(opStorage,0,opStorage.size() - 1);
+
+            for(int j = 0; j < opStorage.size(); j++){
+                Float no = opStorage.get(j);
+                if (no == 1.0) {
+                    symlStorage.add(new AddSyml());
+                }else if(no == 2.0){
+                    symlStorage.add(new SubSyml());
+                }else if(no == 3.0){
+                    symlStorage.add(new MulSyml());
+                }else if(no == 4.0){
+                    symlStorage.add(new DivSyml());
+                }
+            }
+
+            //生成问题的信息字符串，并在storage查找是否存在，以实现排除重复题目。
+            for(Float num : numStorage){
+                sb.append(num+" ");
+            }
+
+            for(Symbol symbol : symlStorage){
+                sb.append(symbol.getName()+" ");
+            }
+
+            sb.append(resultStorage);
+            String problemInfo = sb.toString();
+
+            //在storage中查找是否存在该问题字符串
+            if(storage.get(problemInfo) != null){
+                System.out.println("出现了重复！！！");
+                System.out.println("-----------------------  ");
+                continue;
+            }
+
+            SaveFiles.save((i+1)+"、 "+problem,"D:\\JAVA\\Exercises.txt");
+            SaveFiles.save((i+1)+"、 "+result,"D:\\JAVA\\Answers.txt");
+            //保存问题的运算结果，用于对比答案
+            //resultList = new ArrayList<String>();
+            resultList.add(result);
+
+            System.out.println("题目： " + problem);
+            System.out.println("结果： " + result);
+            System.out.println("问题信息 ：" + problemInfo);
+            i++;
+            storage.put(problemInfo,true);
+            System.out.println("-----------------------  " + i);
+        }
+
+
+        checkAnswer("D:\\JAVA\\Answers.txt",resultList);
+
+
+    }
+
+    public void checkAnswer(String filePath,List<String> resultList){
+        List<String> answerList ;
+        answerList = SaveFiles.read(filePath);
+        List<String> correctList = new ArrayList<String>();
+        List<String> wrongList = new ArrayList<String>();
+        int correct = 0;
+        int wrong = 0;
+        for(int i = 0; i < answerList.size() ; i++ ){
+            String answer = answerList.get(i);
+            String result = resultList.get(i);
+            if(answer.equals(result)){
+                correctList.add((i+1)+"");
+                correct++;
+            }else {
+                wrongList.add((i+1)+"");
+                wrong++;
+            }
+        }
+
+        StringBuilder correctStr = new StringBuilder();
+        correctStr.append("Correct: ").append(correct).append(" (");
+        for(int i = 0;i <correctList.size();i++){
+            if( i != correctList.size() - 1){
+                correctStr.append(correctList.get(i)).append(", ");
+            }else {
+                correctStr.append(correctList.get(i));
+            }
+        }
+        correctStr.append(")");
+
+        StringBuilder wrongStr = new StringBuilder();
+        wrongStr.append("Wrong: ").append(wrong).append(" (");
+        for(int i = 0;i <wrongList.size();i++){
+            if( i != wrongList.size() - 1){
+                wrongStr.append(wrongList.get(i)).append(", ");
+            }else {
+                wrongStr.append(wrongList.get(i));
+            }
+        }
+        wrongStr.append(")");
+
+        SaveFiles.save(correctStr.toString(),"D:\\\\JAVA\\\\Grade.txt");
+        SaveFiles.save(wrongStr.toString(),"D:\\\\JAVA\\\\Grade.txt");
+    }
+    
+
 
     /**
      * 生成问题
@@ -33,6 +194,9 @@ public class CreateProblems {
         numList = new ArrayList<Number>();
         opList = new ArrayList<Symbol>();
         bracList = new ArrayList<Integer>();
+        numList2 = new ArrayList<Number>();
+        opList2 = new ArrayList<Symbol>();
+
 
 
         //运算式的数字个数，最多4个,最少2个。
@@ -72,6 +236,7 @@ public class CreateProblems {
             number.setNumerator(numerator);
             number.setDenominator(denominator);
             numList.add(number);
+            numList2.add(number);
 
         }
         //随机生成运算符
@@ -93,25 +258,114 @@ public class CreateProblems {
                     break;
             }
             opList.add(symbol);
+            opList2.add(symbol);
         }
 
+       /* 测试查重用代码
+         if(i == 1){
+            num = 4;
+            opNum = 3;
+            bracNum = 2;
+            //初始化List
+            numList = new ArrayList<Number>();
+            opList = new ArrayList<Symbol>();
+            bracList = new ArrayList<Integer>();
+            numList2 = new ArrayList<Number>();
+            opList2 = new ArrayList<Symbol>();
+            Number number = new Number();
+            number.setNumerator(3);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+            number = new Number();
+            number.setNumerator(4);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
 
-  /*      Map<Integer,Boolean> bracMap = new HashMap<Integer, Boolean>();
-        for(Integer pos : bracList){
-            bracMap.put(pos,true);
+            number = new Number();
+            number.setNumerator(5);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+
+            number = new Number();
+            number.setNumerator(2);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+
+            Symbol symbol = new AddSyml();
+            opList.add(symbol);
+            opList2.add(symbol);
+            symbol = new MulSyml();
+            opList.add(symbol);
+            opList2.add(symbol);
+            symbol = new DivSyml();
+            opList.add(symbol);
+            opList2.add(symbol);
+
+            bracList.add(0);
+            bracList.add(1);
+
+
+
         }
-        //符号
-        Symbol symbol = null;
-        for(int i =0; i < opNum; i++){
-            Boolean hasBrac = bracMap.get(i);
-            symbol = opList.get(i);
-            if(null == hasBrac){
 
-            }
-        }*/
+        if(i == 0){
+            num = 4;
+            opNum = 3;
+            bracNum = 2;
+            //初始化List
+            numList = new ArrayList<Number>();
+            opList = new ArrayList<Symbol>();
+            bracList = new ArrayList<Integer>();
+            numList2 = new ArrayList<Number>();
+            opList2 = new ArrayList<Symbol>();
+            Number number = new Number();
+            number.setNumerator(3);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+            number = new Number();
+            number.setNumerator(5);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+            number = new Number();
+            number.setNumerator(4);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+            number = new Number();
+            number.setNumerator(2);
+            number.setDenominator(1);
+            numList.add(number);
+            numList2.add(number);
+
+            Symbol symbol = new AddSyml();
+            opList.add(symbol);
+            opList2.add(symbol);
+            symbol = new MulSyml();
+            opList.add(symbol);
+            opList2.add(symbol);
+            symbol = new DivSyml();
+            opList.add(symbol);
+            opList2.add(symbol);
+
+            bracList.add(0);
+            bracList.add(1);
+
+
+
+        }
+
+        i--;*/
+
         //生成问题字符串
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < num; i++) {
+            //为方便拼接字符串，把所有的数字都替换为r
             if(i == num - 1){
                 sb.append(" " + "r ");
             }else {
@@ -142,6 +396,7 @@ public class CreateProblems {
 
         }
 
+        //从字符串的“r”分裂字符串成多个子串，再与数字一起拼接成完整的字符串
         String str = sb.toString();
         String[] rs = str.split("r");
         StringBuilder builder = new StringBuilder();
@@ -153,59 +408,13 @@ public class CreateProblems {
             }
 
         }
+        builder.append("= ");
 
+        //格式化字符串
         String result = builder.toString();
         result = result.replace("("," ( ");
         result = result.replace(")"," ) ").trim();
 
-
-
-
-
-
-
-
- /*       for (int i = 0; i < num; i++) {
-            sb.append(" "+numList.get(i).toString());
-            try {
-                sb.append(" "+opList.get(i).getName());
-            } catch (Exception e) {
-
-            }
-        */
-
-    /*    try{
-            if(bracNum == 1){
-                Integer pos = bracList.get(0);
-                sb.insert(pos*2,"(");
-                sb.insert(pos*2+4,")");
-            }else {
-                Integer pos = bracList.get(0);
-                sb.insert(pos*2,"(");
-                pos = bracList.get(1);
-                sb.insert(pos*2+4,")");
-            }
-        }catch (Exception e){
-
-        }*/
-
-        System.out.print("Num: ");
-        for (Number number : numList) {
-            System.out.print(number + " ");
-        }
-        System.out.println();
-        System.out.print("OP: ");
-        for (Symbol symbol : opList) {
-            System.out.print(symbol.getName() + " ");
-        }
-        System.out.println();
-        System.out.print("pos: ");
-        for (Integer pos : bracList) {
-            System.out.print(pos + " ");
-        }
-        System.out.println();
-
-        System.out.println(solveProblem());
 
         return result;
     }
@@ -252,7 +461,12 @@ public class CreateProblems {
             }
 
             //最大的优先级，默认括号内第一个符号
-            Integer maxPriority = opList.get(opFrom).getPriotiry();
+            Integer maxPriority = null;
+            try{
+                maxPriority = opList.get(opFrom).getPriotiry();
+            }catch (Exception e){
+                return null;
+            }
             //优先级最大的符号的位置，默认括号内第一个符号
             Integer maxPos = opFrom;
             //目前运算符的优先级
@@ -261,7 +475,12 @@ public class CreateProblems {
             Integer pos = null;
             //寻找当前运算中，优先级最高的符号以及其位置。
             for (int i = opFrom; i <= opTo; i++) {
-                priority = opList.get(i).getPriotiry();
+                try{
+                    priority = opList.get(i).getPriotiry();
+                }catch (Exception e){
+                    return null;
+                }
+
                 pos = i;
                 if (priority > maxPriority) {
                     maxPriority = priority;
@@ -298,6 +517,26 @@ public class CreateProblems {
             sum.setNumerator(numerator);
             sum.setDenominator(denominator);
 
+            if(symbol.equals("÷") && numerator <= 0 || denominator == 0){
+                //除数不能为0
+                return null;
+            }
+
+            if(numerator < 0){
+                //计算过程出现负数，不符合要求
+                return null;
+            }
+
+            if(opList.size() == 1){
+                //获取计算的最后一步，以方便验证是否题目重复
+                if(num1.getValue() > num2.getValue() && (symbol.equals("+")||symbol.equals("×"))){
+                    resultStorage = num2.toString() + symbol + num1.toString();
+                }else {
+                    resultStorage = num1.toString() + symbol + num2.toString();
+                }
+
+            }
+
             //一次运算之后，修改各List数据
             numList.set(maxPos, sum);
             try {
@@ -312,5 +551,47 @@ public class CreateProblems {
         }
 
         return sum.toString();
+    }
+
+    /**
+     *
+     * 快速排序
+     * @return
+     * @params
+     */
+    public void quickSort(List<Float> arr, int leftIndex, int rightIndex) {
+        if (leftIndex >= rightIndex) {
+            return;
+        }
+
+        int left = leftIndex;
+        int right = rightIndex;
+        //待排序的第一个元素作为基准值
+        Float key = arr.get(left);
+
+        //从左右两边交替扫描，直到left = right
+        while (left < right) {
+            while (right > left && arr.get(right) >= key) {
+                //从右往左扫描，找到第一个比基准值小的元素
+                right--;
+            }
+
+            //找到这种元素将arr[right]放入arr[left]中
+            arr.set(left,arr.get(right));
+
+            while (left < right && arr.get(left) <= key) {
+                //从左往右扫描，找到第一个比基准值大的元素
+                left++;
+            }
+
+            //找到这种元素将arr[left]放入arr[right]中
+            arr.set(right,arr.get(left));
+        }
+        //基准值归位
+        arr.set(left,key);
+        //对基准值左边的元素进行递归排序
+        quickSort(arr, leftIndex, left - 1);
+        //对基准值右边的元素进行递归排序。
+        quickSort(arr, right + 1, rightIndex);
     }
 }

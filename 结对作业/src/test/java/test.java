@@ -169,8 +169,76 @@ public class test {
 
     @Test
     public void testCreateProblem() throws Exception {
-        System.out.println(createProblems.createProblem(10));
+        for(int i = 0;i < 100; ){
+            String problem = createProblems.createProblem(10);
+            String result = createProblems.solveProblem();
+            if(null == problem){
+                continue;
+            }
+            if(null == result){
+                continue;
+            }
+            i++;
+            System.out.println(problem);
+            System.out.println(result);
+
+            System.out.println(i+"  -----------------");
+        }
+
     }
+
+    @Test
+    public void testCreateProblems() throws Exception {
+        createProblems.createProblems(10,10);
+    }
+
+    @Test
+    public void testRead(){
+        List<String> read = SaveFiles.read("D:\\JAVA\\Answers.txt");
+        System.out.println(read);
+    }
+
+    @Test
+    public void testGcd(){
+        System.out.println(new Number().gcd(6,18));
+    }
+
+    @Test
+    public void testMap(){
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("a","a");
+        map.put("a","b");
+        System.out.println(map.get("a"));
+    }
+
+    @Test
+    public void testArrayEqual(){
+        List<Integer> list1 = new ArrayList<Integer>();
+        List<Integer> list2 = new ArrayList<Integer>();
+        list1.add(1);
+        list1.add(2);
+        list1.add(222);
+        list2.add(1);
+        list2.add(2);
+        list2.add(222);
+
+        System.out.println(list1.equals(list2));
+    }
+
+    @Test
+    public void testSort(){
+        List<Float> list = new ArrayList<Float>();
+        list.add((float) 2);
+        list.add((float) 5);
+        list.add((float) 1);
+        list.add((float) 10);
+        System.out.println(list);
+        createProblems.quickSort(list,0,list.size() - 1);
+        System.out.println(list);
+
+    }
+
+
     @Test
     public void testString(){
         ArrayList<String> list = new ArrayList<String>();
@@ -194,16 +262,16 @@ public class test {
     public void testNumber(){
         Number number = new Number();
         number.setNumerator(3);
-        number.setDenominator(6);
-        System.out.println(number);
+        number.setDenominator(1);
+        System.out.println(number.getValue() == 3.0);
     }
 
     @Test
     public void testList(){
         List<Integer> list = new ArrayList<Integer>();
-        list.add(1);
+        list.set(0,1);
         System.out.println(list);
-        list.remove(0);
+
 
     }
 

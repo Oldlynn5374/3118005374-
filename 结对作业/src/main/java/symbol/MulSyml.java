@@ -4,7 +4,16 @@ public class MulSyml extends Symbol {
 
     public MulSyml() {
         this.setName("×");
+        this.setNo((float)3);
         this.setPriotiry(2);
+    }
+
+    public Float getNo() {
+        return no;
+    }
+
+    public void setNo(Float no) {
+        this.no = no;
     }
 
     public int getPriotiry() {

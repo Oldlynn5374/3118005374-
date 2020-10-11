@@ -6,6 +6,12 @@ public abstract class Symbol {
     public int priotiry;
     //符号名称
     public String name;
+    //符号序号
+    public Float no;
+
+    public abstract Float getNo();
+
+    public abstract void setNo(Float no);
 
     public abstract int getPriotiry();
 
