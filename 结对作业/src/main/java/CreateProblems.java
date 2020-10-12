@@ -22,6 +22,8 @@ public class CreateProblems {
     //存储每条问题
     Map<String,Boolean> storage = new HashMap<String, Boolean>();
 
+    //运算结果集
+    List<String> resultList = new ArrayList<String>();
 
     /**
      * @return 随机数
@@ -47,8 +49,11 @@ public class CreateProblems {
         List<Symbol> symlStorage;
         //问题信息
         StringBuilder sb;
-        //运算结果集
-        List<String> resultList = new ArrayList<String>();
+
+        //问题集字符串
+        StringBuilder exercisesSb = new StringBuilder();
+        //答案字符串
+        StringBuilder correctAnswerSb = new StringBuilder();
 
         for(int i = 0;i < n; ){
             //生成问题并判断合法性
@@ -115,10 +120,12 @@ public class CreateProblems {
                 continue;
             }
 
-            SaveFiles.save((i+1)+"、 "+problem,"D:\\JAVA\\Exercises.txt");
-            SaveFiles.save((i+1)+"、 "+result,"D:\\JAVA\\Answers.txt");
+           /* SaveFiles.save((i+1)+"、 "+problem,"D:\\JAVA\\Exercises.txt");
+            SaveFiles.save((i+1)+"、 "+result,"D:\\JAVA\\Answers.txt");*/
+            exercisesSb.append((i+1)+"、 "+problem).append("\n");
+            correctAnswerSb.append((i+1)+"、 "+result).append("\n");
+
             //保存问题的运算结果，用于对比答案
-            //resultList = new ArrayList<String>();
             resultList.add(result);
 
             System.out.println("题目： " + problem);
@@ -129,15 +136,24 @@ public class CreateProblems {
             System.out.println("-----------------------  " + i);
         }
 
-
-        checkAnswer("D:\\JAVA\\Answers.txt",resultList);
+        SaveFiles.save(exercisesSb.toString(),"Exercises.txt");
+        SaveFiles.save(correctAnswerSb.toString(),"Answer.txt");
+        //checkAnswer("Answer.txt");
 
 
     }
 
-    public void checkAnswer(String filePath,List<String> resultList){
+    /**
+     *
+     * 检查答案
+     * @return
+     * @params
+     */
+    public void checkAnswer(String answerPath){
         List<String> answerList ;
-        answerList = SaveFiles.read(filePath);
+        List<String> resultList ;
+        answerList = SaveFiles.read(answerPath);
+        resultList = SaveFiles.read("Answer.txt");
         List<String> correctList = new ArrayList<String>();
         List<String> wrongList = new ArrayList<String>();
         int correct = 0;
@@ -176,8 +192,13 @@ public class CreateProblems {
         }
         wrongStr.append(")");
 
-        SaveFiles.save(correctStr.toString(),"D:\\\\JAVA\\\\Grade.txt");
-        SaveFiles.save(wrongStr.toString(),"D:\\\\JAVA\\\\Grade.txt");
+        StringBuilder gradeBuilder = new StringBuilder();
+        gradeBuilder.append(correctStr.toString());
+        gradeBuilder.append("\n");
+        gradeBuilder.append(wrongStr.toString());
+
+        SaveFiles.save(gradeBuilder.toString(),"Grade.txt");
+
     }
     
 

@@ -16,9 +16,9 @@ public class SaveFiles {
 
         FileWriter fw = null;
         try {
-//如果文件存在，则追加内容；如果文件不存在，则创建文件
+
             File f=new File(file);
-            fw = new FileWriter(f, true);
+            fw = new FileWriter(f, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,8 +45,14 @@ public class SaveFiles {
             answer = new String(buffer);*/
           br = new BufferedReader(new FileReader(new File(filePath)));
           while((answer = br.readLine())!= null){
-              String[] split = answer.split("、");
-              answerList.add(split[1].trim());
+
+              try{
+                  String[] split = answer.split("、");
+                  answerList.add(split[1].trim());
+              }catch (Exception e){
+
+              }
+
           }
 
 
